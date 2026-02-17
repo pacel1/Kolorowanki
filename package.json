@@ -1,0 +1,14 @@
+{
+  "name": "coloring-portal",
+  "private": true,
+  "packageManager": "pnpm@9.0.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "pnpm -r dev",
+    "lint": "pnpm -r lint",
+    "build": "pnpm -r build"
+  }
+}
