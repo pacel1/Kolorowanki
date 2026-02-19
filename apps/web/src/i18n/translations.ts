@@ -1,6 +1,7 @@
 import type { Locale } from '@/i18n/config';
 
-const translations: Record<string, Record<string, string | ((arg: string | number) => string)>> = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const translations: Record<string, Record<string, string | ((arg: any) => string)>> = {
   pl: {
     // Site
     'site.name': 'Kolorowanki',
