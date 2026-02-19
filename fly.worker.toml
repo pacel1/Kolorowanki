@@ -1,0 +1,11 @@
+app = "coloring-worker"
+primary_region = "waw"
+
+[build]
+  dockerfile = "apps/worker/Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+
+# Worker does not expose HTTP port
+# No [[http_service]] section needed

@@ -152,7 +152,7 @@ async function processAiGenerateJob(
     // 6. Call tagger — non-fatal if it fails
     try {
       console.log(`[ai-generate] calling tagger…`);
-      const seo = await generateSeoMetadata(topic, locale);
+      const seo = await generateSeoMetadata(topic, locale as "pl" | "en");
       console.log(
         `[ai-generate] tagger done title="${seo.title}" tags=${seo.tags.join(", ")}`
       );
