@@ -13,5 +13,8 @@
     "build": "pnpm -r build",
     "build:web": "pnpm --filter web build",
     "postinstall": "pnpm dlx prisma@6.19.2 generate --schema packages/db/prisma/schema.prisma"
+  },
+  "devDependencies": {
+    "next": "16.1.6"
   }
 }
