@@ -14,10 +14,11 @@
 import type { Category, ColoringPage } from '@/types';
 import { prisma } from '@coloring/db';
 import { DEFAULT_LOCALE } from '@coloring/config/locales';
+import { getBaseUrl } from './getBaseUrl';
 
 // ─── API base URL ─────────────────────────────────────────────────────────────
-// Use relative URLs - the API routes are now in Next.js (apps/web/src/app/api/)
-const API_BASE = '/api';
+// Use getBaseUrl() to support both browser and server environments
+const getApiBase = () => getBaseUrl();
 
 // ─── API response types ───────────────────────────────────────────────────────
 
@@ -65,7 +66,7 @@ function mapApiPage(p: ApiColoringPage): ColoringPage {
 // ─── Fetch helpers ────────────────────────────────────────────────────────────
 
 async function apiFetch<T>(path: string): Promise<T> {
-  const url = `${API_BASE}${path}`;
+  const url = `${getApiBase()}${path}`;
   const res = await fetch(url, {
     cache: 'no-store', // always fetch fresh data – no ISR cache
   });

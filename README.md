@@ -102,3 +102,28 @@ Adresy:
 | `pnpm --filter @coloring/db db:push` | Synchronizuje schemat Prisma z bazą |
 | `pnpm --filter @coloring/db seed` | Ładuje przykładowe dane |
 | `pnpm --filter @coloring/db studio` | Otwiera Prisma Studio |
+
+---
+
+## Wymagane zmienne środowiskowe (Vercel / produkcja)
+
+### WEB_BASE_URL
+
+**Wymagana zmienna środowiskowa:**
+
+```
+WEB_BASE_URL=https://twojprojekt.vercel.app
+```
+
+**Ważne:**
+- Ustaw tę zmienną w panelu Vercel w ustawieniach projektu
+- Zmienna jest wymagana do działania API w środowisku serwerowym (SSR)
+- W środowisku lokalnym (dev) aplikacja działa bez tej zmiennej
+
+**NIE zmieniaj:**
+- endpointów API
+- logiki backendu
+- struktur danych
+- route handlers
+
+Zmiana dotyczy WYŁĄCZNIE sposobu wywołania fetch w SSR (Server Components).
