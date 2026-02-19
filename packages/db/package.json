@@ -5,25 +5,25 @@
   "main": "index.ts",
   "types": "index.ts",
   "scripts": {
-    "generate": "prisma generate --config prisma.config.ts",
-    "migrate": "prisma migrate dev --config prisma.config.ts",
-    "migrate:deploy": "prisma migrate deploy --config prisma.config.ts",
-    "db:push": "prisma db push --config prisma.config.ts",
+    "generate": "prisma generate --schema prisma/schema.prisma",
+    "migrate": "prisma migrate dev --schema prisma/schema.prisma",
+    "migrate:deploy": "prisma migrate deploy --schema prisma/schema.prisma",
+    "db:push": "prisma db push --schema prisma/schema.prisma",
     "seed": "node prisma/seed.mjs",
     "seed:categories": "tsx scripts/seedCategories.ts",
     "seed:category-translations": "tsx scripts/seedCategoryTranslations.ts",
     "check:categories": "tsx scripts/checkCategories.ts",
     "reassign:categories": "tsx scripts/reassignCategories.ts",
     "cleanup:categories": "tsx scripts/cleanupOldCategories.ts",
-    "studio": "prisma studio --config prisma.config.ts"
+    "studio": "prisma studio --schema prisma/schema.prisma"
   },
   "dependencies": {
-    "@prisma/client": "^6.0.0",
+    "@prisma/client": "6.19.2",
     "dotenv": "^17.3.1"
   },
   "devDependencies": {
     "@types/node": "^20.19.33",
-    "prisma": "^6.0.0",
+    "prisma": "6.19.2",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }

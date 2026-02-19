@@ -10,6 +10,7 @@
     "dev": "pnpm -r dev",
     "dev:all": "pnpm --parallel --filter web --filter worker dev",
     "lint": "pnpm -r lint",
-    "build": "pnpm -r build"
+    "build": "pnpm -r build",
+    "postinstall": "pnpm dlx prisma@6.19.2 generate --schema packages/db/prisma/schema.prisma"
   }
 }
