@@ -635,9 +635,9 @@ export async function getPopularTagsInCategory(
     tagTranslation: { findFirst: (args: unknown) => Promise<unknown> };
   };
 
-  // Fetch all published pages in the category with their tags
+  // Fetch all pages in the category with their tags
   const pages = await db.coloringPage.findMany({
-    where: { status: 'PUBLISHED', category: canonicalCategorySlug },
+    where: { category: canonicalCategorySlug },
     select: { pageTags: { select: { id: true } } },
   }) as Array<{ pageTags: Array<{ id: string }> }>;
 
@@ -781,7 +781,7 @@ export async function getPaginatedColoringsByCategory(
     coloringPageTranslation: { findFirst: (args: unknown) => Promise<unknown> };
   };
 
-  const where = { published: true, category: cat.canonicalSlug };
+  const where = { category: cat.canonicalSlug };
 
   const [total, pageRows] = await Promise.all([
     db.coloringPage.count({ where }),
@@ -1076,7 +1076,7 @@ export async function getColoringsByCategoryLocaleAndSlug(
   const pageIds = await (prisma as unknown as {
     coloringPage: { findMany: (args: unknown) => Promise<unknown> };
   }).coloringPage.findMany({
-    where: { published: true, category: cat.canonicalSlug },
+    where: { category: cat.canonicalSlug },
     select: { id: true },
   }) as Array<{ id: string }>;
 
