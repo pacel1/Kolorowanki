@@ -1,18 +1,22 @@
 'use client';
 
 import { usePackContext } from '@/context/pack-context';
-import type { ColoringPage, Locale } from '@/types';
-import { getTranslations } from '@/i18n/translations';
+import type { ColoringPage } from '@/types';
+
+// Static translations for English (no i18n)
+const t = {
+  'coloring.addToPack': 'Add to Pack',
+  'coloring.inPack': 'In Pack',
+};
 
 interface AddToPackButtonProps {
   coloring: ColoringPage;
-  locale: Locale;
   className?: string;
 }
 
-export function AddToPackButton({ coloring, locale, className = '' }: AddToPackButtonProps) {
+export function AddToPackButton({ coloring, className = '' }: AddToPackButtonProps) {
   const { isInPack, toggleItem } = usePackContext();
-  const t = getTranslations(locale);
+  const locale = 'en';
 
   const inPack = isInPack(coloring.id);
 
@@ -20,7 +24,7 @@ export function AddToPackButton({ coloring, locale, className = '' }: AddToPackB
     toggleItem({
       coloringId: coloring.id,
       slug: coloring.slug,
-      title: coloring.title[locale],
+      title: coloring.title[locale] || coloring.title['en'] || Object.values(coloring.title)[0],
       thumbnailUrl: coloring.thumbnailUrl,
     });
   }
@@ -42,12 +46,12 @@ export function AddToPackButton({ coloring, locale, className = '' }: AddToPackB
       {inPack ? (
         <>
           <CheckIcon />
-          <span>{t('coloring.inPack')}</span>
+          <span>{t['coloring.inPack']}</span>
         </>
       ) : (
         <>
           <PlusIcon />
-          <span>{t('coloring.addToPack')}</span>
+          <span>{t['coloring.addToPack']}</span>
         </>
       )}
     </button>

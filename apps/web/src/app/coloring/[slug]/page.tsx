@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { isValidLocale } from '@/i18n/config';
-import { getTranslations } from '@/i18n/translations';
 import { getColoringByLocaleAndSlug, getColoringTranslations, getCategoryTranslationByCanonicalSlug, getPageTagIds, getRelatedPages } from '@/lib/get-coloring';
 import type { RelatedPage } from '@/lib/get-coloring';
 import { isThinPage } from '@/lib/seoQuality';
@@ -10,21 +8,30 @@ import { buildColoringAlternates } from '@/lib/alternates';
 import { AddToPackButton } from '@/components/AddToPackButton';
 import { ColoringImage } from '@/components/ColoringImage';
 
+// Static translations
+const t = {
+  'coloring.backToHome': '← Back to Home',
+  'coloring.fallbackNotice': 'This page is not yet available in your language.',
+  'coloring.addToPack': 'Add to Pack',
+  'coloring.removeFromPack': 'Remove from Pack',
+  'coloring.download': 'Download',
+  'coloring.category': 'Category',
+  'coloring.tags': 'Tags',
+  'coloring.related.similar': 'Similar coloring pages',
+  'coloring.related.category': 'More from this category',
+};
+
 interface ColoringDetailPageProps {
-  params: Promise<{ locale: string; slug: string }>;
+  params: Promise<{ slug: string }>;
 }
 
 export async function generateStaticParams() {
-  // Translated slugs are only known at runtime; return empty so Next.js
-  // renders pages on demand (dynamic fallback).
   return [];
 }
 
 export async function generateMetadata({ params }: ColoringDetailPageProps): Promise<Metadata> {
-  const { locale, slug } = await params;
-  if (!isValidLocale(locale)) return {};
-
-  const coloring = await getColoringByLocaleAndSlug(locale, slug);
+  const { slug } = await params;
+  const coloring = await getColoringByLocaleAndSlug('en', slug);
   if (!coloring) return {};
 
   // Fetch all locale+slug pairs for this page and build canonical + hreflang map
@@ -63,28 +70,24 @@ export async function generateMetadata({ params }: ColoringDetailPageProps): Pro
 }
 
 export default async function ColoringDetailPage({ params }: ColoringDetailPageProps) {
-  const { locale, slug } = await params;
+  const { slug } = await params;
 
-  if (!isValidLocale(locale)) notFound();
-
-  const t = getTranslations(locale);
-
-  // ── Fetch via translation layer ──────────────────────────────────────────
-  const coloring = await getColoringByLocaleAndSlug(locale, slug);
+  // Fetch via translation layer with fixed locale
+  const coloring = await getColoringByLocaleAndSlug('en', slug);
   if (!coloring) notFound();
 
   // Resolve translated category for local link (lookup by canonical slug via DB)
-  const localCategory = await getCategoryTranslationByCanonicalSlug(locale, coloring.categorySlug)
+  const localCategory = await getCategoryTranslationByCanonicalSlug('en', coloring.categorySlug)
     .catch(() => null);
   const categoryLocalSlug = localCategory?.slug ?? coloring.categorySlug;
 
-  // ── Related pages ────────────────────────────────────────────────────────
+  // Related pages
   const tagIds = await getPageTagIds(coloring.pageId);
 
   // "Similar" = tag-based (up to 4)
   const similarPages = await getRelatedPages({
     pageId: coloring.pageId,
-    locale,
+    locale: 'en',
     category: coloring.categorySlug,
     tagIds,
     limit: 4,
@@ -94,7 +97,7 @@ export default async function ColoringDetailPage({ params }: ColoringDetailPageP
   const shownIds = new Set(similarPages.map((p) => p.pageId));
   const categoryPages = await getRelatedPages({
     pageId: coloring.pageId,
-    locale,
+    locale: 'en',
     category: coloring.categorySlug,
     tagIds: [], // no tag filter → pure category
     limit: 4 + shownIds.size, // over-fetch to account for deduplication
@@ -105,17 +108,17 @@ export default async function ColoringDetailPage({ params }: ColoringDetailPageP
       {/* Fallback notice */}
       {coloring.isFallback && (
         <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
-          {t('coloring.fallbackNotice')}
+          {t['coloring.fallbackNotice']}
         </div>
       )}
 
       {/* Breadcrumb */}
       <nav aria-label="breadcrumb">
         <Link
-          href={`/${locale}`}
+          href="/"
           className="text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
         >
-          {t('coloring.backToHome')}
+          {t['coloring.backToHome']}
         </Link>
       </nav>
 
@@ -150,10 +153,10 @@ export default async function ColoringDetailPage({ params }: ColoringDetailPageP
           <dl className="flex flex-col gap-3 text-sm">
             {coloring.categorySlug && (
               <div className="flex items-center gap-2">
-                <dt className="font-medium text-zinc-500 dark:text-zinc-400">{t('coloring.category')}:</dt>
+                <dt className="font-medium text-zinc-500 dark:text-zinc-400">{t['coloring.category']}:</dt>
                 <dd>
                   <Link
-                    href={`/${locale}/category/${categoryLocalSlug}`}
+                    href={`/category/${categoryLocalSlug}`}
                     className="rounded-full bg-indigo-100 px-3 py-0.5 font-medium text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-300 dark:hover:bg-indigo-900/60"
                   >
                     {localCategory?.name ?? coloring.categorySlug}
@@ -164,12 +167,12 @@ export default async function ColoringDetailPage({ params }: ColoringDetailPageP
 
             {coloring.tags.length > 0 && (
               <div className="flex flex-wrap items-center gap-2">
-                <dt className="font-medium text-zinc-500 dark:text-zinc-400">{t('coloring.tags')}:</dt>
+                <dt className="font-medium text-zinc-500 dark:text-zinc-400">{t['coloring.tags']}:</dt>
                 <dd className="flex flex-wrap gap-1">
                   {coloring.tags.map((tag) => (
                     <Link
                       key={tag.slug}
-                      href={`/${locale}/tag/${tag.slug}`}
+                      href={`/tag/${tag.slug}`}
                       className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600 transition-colors hover:bg-indigo-100 hover:text-indigo-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-indigo-900/40 dark:hover:text-indigo-300"
                     >
                       {tag.name}
@@ -186,8 +189,8 @@ export default async function ColoringDetailPage({ params }: ColoringDetailPageP
               coloring={{
                 id: coloring.pageId,
                 slug: coloring.canonicalSlug,
-                title: { [locale]: coloring.title, en: coloring.title } as Record<string, string>,
-                description: { [locale]: coloring.description ?? '', en: coloring.description ?? '' } as Record<string, string>,
+                title: { en: coloring.title },
+                description: { en: coloring.description ?? '' },
                 categoryId: coloring.categorySlug,
                 categorySlug: coloring.categorySlug,
                 imageUrl: coloring.imageUrl,
@@ -195,7 +198,6 @@ export default async function ColoringDetailPage({ params }: ColoringDetailPageP
                 tags: coloring.tags.map((t) => t.name),
                 createdAt: coloring.createdAt.toISOString(),
               }}
-              locale={locale}
             />
             <a
               href={coloring.imageUrl}
@@ -203,7 +205,7 @@ export default async function ColoringDetailPage({ params }: ColoringDetailPageP
               className="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
             >
               <DownloadIcon />
-              {t('coloring.download')}
+              {t['coloring.download']}
             </a>
           </div>
         </div>
@@ -216,11 +218,11 @@ export default async function ColoringDetailPage({ params }: ColoringDetailPageP
             id="similar-heading"
             className="mb-4 text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100"
           >
-            {t('coloring.related.similar')}
+            {t['coloring.related.similar']}
           </h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             {similarPages.map((page) => (
-              <RelatedCard key={page.pageId} page={page} locale={locale} />
+              <RelatedCard key={page.pageId} page={page} />
             ))}
           </div>
         </section>
@@ -233,11 +235,11 @@ export default async function ColoringDetailPage({ params }: ColoringDetailPageP
             id="category-heading"
             className="mb-4 text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100"
           >
-            {t('coloring.related.category')}
+            {t['coloring.related.category']}
           </h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             {categoryPages.map((page) => (
-              <RelatedCard key={page.pageId} page={page} locale={locale} />
+              <RelatedCard key={page.pageId} page={page} />
             ))}
           </div>
         </section>
@@ -246,10 +248,10 @@ export default async function ColoringDetailPage({ params }: ColoringDetailPageP
   );
 }
 
-function RelatedCard({ page, locale }: { page: RelatedPage; locale: string }) {
+function RelatedCard({ page }: { page: RelatedPage }) {
   return (
     <Link
-      href={`/${locale}/coloring/${page.slug}`}
+      href={`/coloring/${page.slug}`}
       className="group flex flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-zinc-700 dark:bg-zinc-900"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-zinc-100 dark:bg-zinc-800">

@@ -1,4 +1,4 @@
-export default function LocaleLoading() {
+export default function Loading() {
   return (
     <div className="flex flex-col gap-12">
       <div className="animate-pulse rounded-2xl bg-zinc-200 px-8 py-12 dark:bg-zinc-800">

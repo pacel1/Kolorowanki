@@ -3,13 +3,20 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useParams } from 'next/navigation';
 import { usePackContext } from '@/context/pack-context';
-import { getTranslations } from '@/i18n/translations';
-import { isValidLocale } from '@/i18n/config';
-import type { Locale } from '@/types';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// Static translations
+const t = {
+  'pack.title': 'My Pack',
+  'pack.description': 'Your selected coloring pages for download.',
+  'pack.empty': 'Your pack is empty.',
+  'pack.empty.cta': 'Browse coloring pages',
+  'pack.download': 'Download Pack',
+  'pack.clear': 'Clear Pack',
+  'pack.items': 'coloring pages',
+  'pack.item': 'coloring page',
+  'pack.remove': 'Remove',
+};
 
 type JobStatus = 'PENDING' | 'PROCESSING' | 'DONE' | 'FAILED';
 
@@ -32,26 +39,19 @@ type GenerateState =
 const POLL_INTERVAL_MS = 2000;
 const TERMINAL_STATUSES: JobStatus[] = ['DONE', 'FAILED'];
 
-// ─── Component ────────────────────────────────────────────────────────────────
-
 export default function PackPage() {
-  const params = useParams();
-  const locale = (params?.locale as string) ?? 'pl';
-  const typedLocale: Locale = isValidLocale(locale) ? locale : 'pl';
-  const t = getTranslations(typedLocale);
-
   const { pack, removeItem, clearPack, count } = usePackContext();
   const [state, setState] = useState<GenerateState>({ phase: 'idle' });
   const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // ─── Cleanup polling on unmount ─────────────────────────────────────────────
+  // Cleanup polling on unmount
   useEffect(() => {
     return () => {
       if (pollTimerRef.current) clearTimeout(pollTimerRef.current);
     };
   }, []);
 
-  // ─── Poll job status ────────────────────────────────────────────────────────
+  // Poll job status
   const pollJob = useCallback(async (jobId: string) => {
     try {
       const res = await fetch(`/api/pack/${jobId}`);
@@ -63,18 +63,18 @@ export default function PackPage() {
         setState(
           job.status === 'DONE'
             ? { phase: 'done', job }
-            : { phase: 'error', message: 'Generowanie nie powiodło się. Spróbuj ponownie.' },
+            : { phase: 'error', message: 'Generation failed. Please try again.' },
         );
       } else {
         setState({ phase: 'polling', job });
         pollTimerRef.current = setTimeout(() => pollJob(jobId), POLL_INTERVAL_MS);
       }
     } catch {
-      setState({ phase: 'error', message: 'Błąd połączenia podczas sprawdzania statusu.' });
+      setState({ phase: 'error', message: 'Connection error while checking status.' });
     }
   }, []);
 
-  // ─── Generate PDF ───────────────────────────────────────────────────────────
+  // Generate PDF
   const handleGenerate = useCallback(async () => {
     if (count === 0) return;
     setState({ phase: 'submitting' });
@@ -98,7 +98,7 @@ export default function PackPage() {
     } catch (err) {
       setState({
         phase: 'error',
-        message: err instanceof Error ? err.message : 'Nieznany błąd',
+        message: err instanceof Error ? err.message : 'Unknown error',
       });
     }
   }, [count, pack.items, pollJob]);
@@ -108,7 +108,7 @@ export default function PackPage() {
     setState({ phase: 'idle' });
   }, []);
 
-  // ─── Derived ────────────────────────────────────────────────────────────────
+  // Derived
   const isGenerating = state.phase === 'submitting' || state.phase === 'polling';
   const currentJob = state.phase === 'polling' || state.phase === 'done' ? state.job : null;
 
@@ -118,9 +118,9 @@ export default function PackPage() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-3xl">
-            {t('pack.title')}
+            {t['pack.title']}
           </h1>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{t('pack.description')}</p>
+          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{t['pack.description']}</p>
         </div>
 
         {count > 0 && (
@@ -130,7 +130,7 @@ export default function PackPage() {
               disabled={isGenerating}
               className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
             >
-              {t('pack.clear')}
+              {t['pack.clear']}
             </button>
           </div>
         )}
@@ -141,20 +141,20 @@ export default function PackPage() {
         <div className="flex flex-col items-center gap-6 rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 py-16 text-center dark:border-zinc-700 dark:bg-zinc-900/50">
           <EmptyPackIcon />
           <div>
-            <p className="text-base font-medium text-zinc-700 dark:text-zinc-300">{t('pack.empty')}</p>
+            <p className="text-base font-medium text-zinc-700 dark:text-zinc-300">{t['pack.empty']}</p>
           </div>
           <Link
-            href={`/${typedLocale}`}
+            href="/"
             className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-700"
           >
-            {t('pack.empty.cta')}
+            {t['pack.empty.cta']}
           </Link>
         </div>
       ) : (
         <>
           {/* Count */}
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            {count} {count === 1 ? t('pack.item') : t('pack.items')}
+            {count} {count === 1 ? t['pack.item'] : t['pack.items']}
           </p>
 
           {/* Items grid */}
@@ -165,7 +165,7 @@ export default function PackPage() {
                 className="group relative flex flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-900"
               >
                 <Link
-                  href={`/${typedLocale}/coloring/${item.slug}`}
+                  href={`/coloring/${item.slug}`}
                   className="relative block aspect-[4/3] overflow-hidden bg-zinc-100 dark:bg-zinc-800"
                 >
                   <Image
@@ -201,7 +201,7 @@ export default function PackPage() {
 
                 <div className="flex items-center justify-between gap-2 p-3">
                   <Link
-                    href={`/${typedLocale}/coloring/${item.slug}`}
+                    href={`/coloring/${item.slug}`}
                     className="flex-1 truncate text-sm font-medium text-zinc-900 hover:text-indigo-600 dark:text-zinc-100 dark:hover:text-indigo-400"
                   >
                     {item.title}
@@ -209,7 +209,7 @@ export default function PackPage() {
                   <button
                     onClick={() => removeItem(item.coloringId)}
                     disabled={isGenerating}
-                    aria-label={`${t('pack.remove')} ${item.title}`}
+                    aria-label={`${t['pack.remove']} ${item.title}`}
                     className="shrink-0 rounded p-1 text-zinc-400 hover:bg-red-50 hover:text-red-500 disabled:opacity-40 dark:hover:bg-red-900/20 dark:hover:text-red-400"
                   >
                     <XIcon />
@@ -219,15 +219,15 @@ export default function PackPage() {
             ))}
           </ul>
 
-          {/* ─── Generate PDF section ─────────────────────────────────────── */}
+          {/* Generate PDF section */}
           <div className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-zinc-50 p-5 dark:border-zinc-700 dark:bg-zinc-900/50">
             <div className="flex items-center justify-between gap-4">
               <div>
                 <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
-                  Generuj PDF
+                  Generate PDF
                 </h2>
                 <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
-                  Utwórz paczkę PDF ze wszystkich kolorowanek w koszyku.
+                  Create a PDF pack with all coloring pages in your cart.
                 </p>
               </div>
 
@@ -238,7 +238,7 @@ export default function PackPage() {
                   className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-700"
                 >
                   <PdfIcon />
-                  Generuj PDF ({count})
+                  Generate PDF ({count})
                 </button>
               )}
 
@@ -248,7 +248,7 @@ export default function PackPage() {
                   className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-indigo-400 px-5 py-2.5 text-sm font-medium text-white"
                 >
                   <SpinnerIcon />
-                  {state.phase === 'submitting' ? 'Tworzenie zadania…' : 'Generowanie…'}
+                  {state.phase === 'submitting' ? 'Creating task...' : 'Generating...'}
                 </button>
               )}
 
@@ -259,7 +259,7 @@ export default function PackPage() {
                   className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-green-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-green-700"
                 >
                   <DownloadIcon />
-                  Pobierz PDF
+                  Download PDF
                 </a>
               )}
 
@@ -268,7 +268,7 @@ export default function PackPage() {
                   onClick={handleReset}
                   className="shrink-0 rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
                 >
-                  Resetuj
+                  Reset
                 </button>
               )}
             </div>
@@ -288,7 +288,7 @@ export default function PackPage() {
 
                 <div className="flex-1 text-sm">
                   {state.phase === 'submitting' && (
-                    <span className="text-zinc-600 dark:text-zinc-400">Tworzenie zadania…</span>
+                    <span className="text-zinc-600 dark:text-zinc-400">Creating task...</span>
                   )}
                   {state.phase === 'polling' && (
                     <span className="text-zinc-600 dark:text-zinc-400">
@@ -301,8 +301,7 @@ export default function PackPage() {
                   )}
                   {state.phase === 'done' && (
                     <span className="font-medium text-green-700 dark:text-green-400">
-                      ✓ PDF gotowy!
-                      {!state.job.resultUrl && ' (brak URL – worker jeszcze nie ustawił pliku)'}
+                      ✓ PDF ready!
                     </span>
                   )}
                   {state.phase === 'error' && (
@@ -324,8 +323,7 @@ export default function PackPage() {
   );
 }
 
-// ─── Icons ────────────────────────────────────────────────────────────────────
-
+// Icons
 function PdfIcon() {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"

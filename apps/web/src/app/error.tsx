@@ -7,7 +7,7 @@ interface ErrorProps {
   reset: () => void;
 }
 
-export default function LocaleError({ error, reset }: ErrorProps) {
+export default function Error({ error, reset }: ErrorProps) {
   useEffect(() => {
     console.error(error);
   }, [error]);
@@ -35,17 +35,17 @@ export default function LocaleError({ error, reset }: ErrorProps) {
       </div>
       <div>
         <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-          Coś poszło nie tak
+          Something went wrong
         </h2>
         <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-          Nie udało się załadować kolorowanek. Sprawdź czy serwer API działa.
+          Unable to load coloring pages. Please check if the API server is running.
         </p>
       </div>
       <button
         onClick={reset}
         className="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
       >
-        Spróbuj ponownie
+        Try again
       </button>
     </div>
   );

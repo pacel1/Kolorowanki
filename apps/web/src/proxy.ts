@@ -1,31 +1,11 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { defaultLocale, isValidLocale } from '@/i18n/config';
+
+// Simple proxy - just passes through requests
+// i18n has been removed, no locale handling needed
 
 export function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  // Skip Next.js internals and static files
-  if (
-    pathname.startsWith('/_next') ||
-    pathname.startsWith('/api') ||
-    pathname.startsWith('/images') ||
-    pathname.includes('.')
-  ) {
-    return NextResponse.next();
-  }
-
-  // Check if the pathname already starts with a valid locale
-  const pathnameLocale = pathname.split('/')[1];
-
-  if (isValidLocale(pathnameLocale)) {
-    return NextResponse.next();
-  }
-
-  // Redirect to default locale
-  const url = request.nextUrl.clone();
-  url.pathname = `/${defaultLocale}${pathname === '/' ? '' : pathname}`;
-  return NextResponse.redirect(url);
+  return NextResponse.next();
 }
 
 export const config = {

@@ -1,23 +1,22 @@
 import Link from 'next/link';
-import type { ColoringPage, Locale } from '@/types';
+import type { ColoringPage } from '@/types';
 import { AddToPackButton } from './AddToPackButton';
 import { ColoringImage } from './ColoringImage';
 
 interface ColoringCardProps {
   coloring: ColoringPage;
-  locale: Locale;
 }
 
-export function ColoringCard({ coloring, locale }: ColoringCardProps) {
-const title = coloring.title[locale];
-const altText = title || 'Coloring page image';
-  const description = coloring.description[locale];
-  const href = `/${locale}/coloring/${coloring.slug}`;
+export function ColoringCard({ coloring }: ColoringCardProps) {
+  const title = coloring.title['en'] || Object.values(coloring.title)[0] || 'Coloring page';
+  const altText = title || 'Coloring page image';
+  const description = coloring.description['en'] || '';
+  const href = `/coloring/${coloring.slug}`;
 
   return (
     <article className="group flex flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-zinc-700 dark:bg-zinc-900">
       <Link href={href} className="relative block aspect-[4/3] overflow-hidden bg-zinc-100 dark:bg-zinc-800">
-<ColoringImage
+        <ColoringImage
           src={coloring.thumbnailUrl}
           alt={altText}
           fill
@@ -50,7 +49,7 @@ const altText = title || 'Coloring page image';
           </div>
         )}
 
-        <AddToPackButton coloring={coloring} locale={locale} className="w-full justify-center" />
+        <AddToPackButton coloring={coloring} className="w-full justify-center" />
       </div>
     </article>
   );

@@ -16,8 +16,8 @@ interface CategoryRow {
 }
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const locale = searchParams.get('locale') || 'pl';
+  // Fixed locale - no i18n
+  const locale = 'en';
 
   try {
     // 1. Fetch canonical categories with translations
