@@ -1,7 +1,6 @@
 {
   "buildCommand": "pnpm --filter web build",
-  "installCommand": "pnpm install && pnpm dlx prisma@6.19.2 generate --schema packages/db/prisma/schema.prisma",
+  "installCommand": "pnpm install",
   "framework": "nextjs",
-  "outputDirectory": "apps/web/.next",
-  "rootDirectory": "apps/web"
+  "outputDirectory": "apps/web/.next"
 }
