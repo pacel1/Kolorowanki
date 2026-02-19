@@ -982,37 +982,42 @@ export async function getCategoryByLocaleAndSlug(
   locale: string,
   slug: string
 ): Promise<LocalizedCategory | null> {
-  type CatTrRow = { categoryId: string; slug: string; name: string; locale: string; category: { slug: string } };
+  try {
+    type CatTrRow = { categoryId: string; slug: string; name: string; locale: string; category: { slug: string } };
 
-  let row = await (prisma as unknown as {
-    categoryTranslation: { findFirst: (args: unknown) => Promise<unknown> };
-  }).categoryTranslation.findFirst({
-    where: { locale, slug },
-    select: { categoryId: true, slug: true, name: true, locale: true, category: { select: { slug: true } } },
-  }) as CatTrRow | null;
-
-  let isFallback = false;
-
-  if (!row && locale !== DEFAULT_LOCALE) {
-    row = await (prisma as unknown as {
+    let row = await (prisma as unknown as {
       categoryTranslation: { findFirst: (args: unknown) => Promise<unknown> };
     }).categoryTranslation.findFirst({
-      where: { locale: DEFAULT_LOCALE, slug },
+      where: { locale, slug },
       select: { categoryId: true, slug: true, name: true, locale: true, category: { select: { slug: true } } },
     }) as CatTrRow | null;
-    if (row) isFallback = true;
+
+    let isFallback = false;
+
+    if (!row && locale !== DEFAULT_LOCALE) {
+      row = await (prisma as unknown as {
+        categoryTranslation: { findFirst: (args: unknown) => Promise<unknown> };
+      }).categoryTranslation.findFirst({
+        where: { locale: DEFAULT_LOCALE, slug },
+        select: { categoryId: true, slug: true, name: true, locale: true, category: { select: { slug: true } } },
+      }) as CatTrRow | null;
+      if (row) isFallback = true;
+    }
+
+    if (!row) return null;
+
+    return {
+      categoryId: row.categoryId,
+      canonicalSlug: row.category.slug,
+      slug: row.slug,
+      name: row.name,
+      locale: isFallback ? DEFAULT_LOCALE : locale,
+      isFallback,
+    };
+  } catch (error) {
+    console.error('[getCategoryByLocaleAndSlug] Error:', error);
+    return null;
   }
-
-  if (!row) return null;
-
-  return {
-    categoryId: row.categoryId,
-    canonicalSlug: row.category.slug,
-    slug: row.slug,
-    name: row.name,
-    locale: isFallback ? DEFAULT_LOCALE : locale,
-    isFallback,
-  };
 }
 
 /**
