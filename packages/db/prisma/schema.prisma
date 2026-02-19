@@ -7,15 +7,154 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ColoringPageStatus {
+  DRAFT
+  PUBLISHED
+}
+
 model ColoringPage {
-  id          String   @id @default(cuid())
-  slug        String   @unique
-  title       String
-  description String?
-  category    String
-  tags        String[]
-  imageUrl    String
-  thumbUrl    String?
-  published   Boolean  @default(true)
-  createdAt   DateTime @default(now())
+  id           String             @id @default(cuid())
+  slug         String             @unique
+  title        String
+  description  String?
+  category     String
+  tags         String[]
+  imageUrl     String
+  thumbUrl     String?
+  published    Boolean            @default(true)
+  status       ColoringPageStatus @default(PUBLISHED)
+  sourcePrompt String?
+  locale       String?
+  createdAt    DateTime           @default(now())
+  pageTags      Tag[]              @relation("ColoringPageTags")
+  translations  ColoringPageTranslation[]
+  linksFrom     PageLink[]         @relation("PageLinkFrom")
+  linksTo       PageLink[]         @relation("PageLinkTo")
+}
+
+model ColoringPageTranslation {
+  id             String       @id @default(cuid())
+  pageId         String
+  locale         String
+  title          String
+  slug           String
+  seoTitle       String?
+  seoDescription String?
+  altText        String?
+  description    String?
+  page           ColoringPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@unique([pageId, locale])
+}
+
+model Category {
+  id           String                @id @default(cuid())
+  slug         String                @unique
+  name         String
+  locale       String
+  createdAt    DateTime              @default(now())
+  translations CategoryTranslation[]
+}
+
+model CategoryTranslation {
+  id         String   @id @default(cuid())
+  categoryId String
+  locale     String
+  name       String
+  slug       String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([categoryId, locale])
+}
+
+model Tag {
+  id           String           @id @default(cuid())
+  slug         String           @unique
+  name         String
+  locale       String
+  pages        ColoringPage[]   @relation("ColoringPageTags")
+  translations TagTranslation[]
+}
+
+model TagTranslation {
+  id     String @id @default(cuid())
+  tagId  String
+  locale String
+  name   String
+  slug   String
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([tagId, locale])
+}
+
+enum GenerationPromptStatus {
+  PENDING
+  PROCESSING
+  DONE
+  FAILED
+  SKIPPED
+}
+
+model PromptCategory {
+  id               String            @id @default(cuid())
+  slug             String            @unique
+  locale           String
+  dailyQuota       Int               @default(10)
+  isActive         Boolean           @default(true)
+  stylePreset      String?
+  seedKeywords     String[]
+  negativeKeywords String[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  prompts          GenerationPrompt[]
+}
+
+model GenerationPrompt {
+  id         String                  @id @default(cuid())
+  topic      String
+  promptText String
+  locale     String
+  status     GenerationPromptStatus  @default(PENDING)
+  hash       String                  @unique
+  attempts   Int                     @default(0)
+  createdAt  DateTime                @default(now())
+  updatedAt  DateTime                @updatedAt
+  category   PromptCategory          @relation(fields: [categoryId], references: [id])
+  categoryId String
+}
+
+enum PageLinkType {
+  TAG_RELATED
+  CATEGORY_RELATED
+  TRENDING
+}
+
+model PageLink {
+  id         String       @id @default(cuid())
+  fromPageId String
+  toPageId   String
+  type       PageLinkType
+  locale     String
+  weight     Int          @default(0)
+  fromPage   ColoringPage @relation("PageLinkFrom", fields: [fromPageId], references: [id], onDelete: Cascade)
+  toPage     ColoringPage @relation("PageLinkTo", fields: [toPageId], references: [id], onDelete: Cascade)
+
+  @@unique([fromPageId, toPageId, type, locale])
+  @@index([fromPageId, type, locale])
+}
+
+enum PackJobStatus {
+  PENDING
+  PROCESSING
+  DONE
+  FAILED
+}
+
+model PackJob {
+  id        String        @id @default(cuid())
+  status    PackJobStatus @default(PENDING)
+  pages     String[]
+  resultUrl String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 }

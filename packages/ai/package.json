@@ -1,0 +1,17 @@
+{
+  "name": "@coloring/ai",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "generateImage.ts",
+  "types": "generateImage.ts",
+  "dependencies": {
+    "@coloring/config": "workspace:*",
+    "openai": "^4.0.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "typescript": "^5"
+  }
+}

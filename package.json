@@ -8,6 +8,7 @@
   ],
   "scripts": {
     "dev": "pnpm -r dev",
+    "dev:all": "pnpm --parallel --filter web --filter worker dev",
     "lint": "pnpm -r lint",
     "build": "pnpm -r build"
   }

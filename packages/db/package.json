@@ -1,16 +1,30 @@
 {
-  "name": "db",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "@coloring/db",
+  "private": true,
+  "type": "module",
+  "main": "index.ts",
+  "types": "index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "generate": "prisma generate --config prisma.config.ts",
+    "migrate": "prisma migrate dev --config prisma.config.ts",
+    "migrate:deploy": "prisma migrate deploy --config prisma.config.ts",
+    "db:push": "prisma db push --config prisma.config.ts",
+    "seed": "node prisma/seed.mjs",
+    "seed:categories": "tsx scripts/seedCategories.ts",
+    "seed:category-translations": "tsx scripts/seedCategoryTranslations.ts",
+    "check:categories": "tsx scripts/checkCategories.ts",
+    "reassign:categories": "tsx scripts/reassignCategories.ts",
+    "cleanup:categories": "tsx scripts/cleanupOldCategories.ts",
+    "studio": "prisma studio --config prisma.config.ts"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "@prisma/client": "^7.4.0",
-    "prisma": "^7.4.0"
+    "@prisma/client": "^6.0.0",
+    "dotenv": "^17.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.33",
+    "prisma": "^6.0.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
   }
 }

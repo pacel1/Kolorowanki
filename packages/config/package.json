@@ -1,0 +1,11 @@
+{
+  "name": "@coloring/config",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "locales.ts",
+  "types": "locales.ts",
+  "exports": {
+    "./locales": "./locales.ts"
+  }
+}

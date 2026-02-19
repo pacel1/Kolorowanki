@@ -1,0 +1,13 @@
+node_modules
+.next
+dist
+build
+.env
+.env.*
+!.env.example
+coverage
+*.log
+pnpm-lock.yaml
+apps/web/.next
+apps/web/.vercel
+.prisma
