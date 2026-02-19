@@ -1,7 +1,7 @@
 {
   "name": "coloring-portal",
   "private": true,
-  "packageManager": "pnpm@10",
+  "packageManager": "pnpm@9.0.0",
   "workspaces": [
     "apps/*",
     "packages/*"
