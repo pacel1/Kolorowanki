@@ -66,7 +66,9 @@ function mapApiPage(p: ApiColoringPage): ColoringPage {
 // ─── Fetch helpers ────────────────────────────────────────────────────────────
 
 async function apiFetch<T>(path: string): Promise<T> {
-  const url = `${getApiBase()}${path}`;
+  // Ensure path starts with /api prefix
+  const apiPath = path.startsWith('/api') ? path : `/api${path}`;
+  const url = `${getApiBase()}${apiPath}`;
   const res = await fetch(url, {
     cache: 'no-store', // always fetch fresh data – no ISR cache
   });
