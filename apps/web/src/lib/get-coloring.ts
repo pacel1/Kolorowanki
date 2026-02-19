@@ -16,12 +16,8 @@ import { prisma } from '@coloring/db';
 import { DEFAULT_LOCALE } from '@coloring/config/locales';
 
 // ─── API base URL ─────────────────────────────────────────────────────────────
-
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ??
-  (typeof window === 'undefined'
-    ? 'http://localhost:4000' // server-side (SSR / SSG)
-    : '/api');                // client-side (proxied by Next.js rewrites)
+// Use relative URLs - the API routes are now in Next.js (apps/web/src/app/api/)
+const API_BASE = '/api';
 
 // ─── API response types ───────────────────────────────────────────────────────
 
