@@ -694,6 +694,7 @@ export async function getPaginatedColoringsByTag(
   const db = prisma as unknown as {
     coloringPage: {
       findMany: (args: unknown) => Promise<unknown>;
+      findUnique: (args: unknown) => Promise<unknown>;
       count: (args: unknown) => Promise<number>;
     };
     coloringPageTranslation: { findFirst: (args: unknown) => Promise<unknown> };
@@ -776,6 +777,7 @@ export async function getPaginatedColoringsByCategory(
   const db = prisma as unknown as {
     coloringPage: {
       findMany: (args: unknown) => Promise<unknown>;
+      findUnique: (args: unknown) => Promise<unknown>;
       count: (args: unknown) => Promise<number>;
     };
     coloringPageTranslation: { findFirst: (args: unknown) => Promise<unknown> };
@@ -808,31 +810,65 @@ export async function getPaginatedColoringsByCategory(
         },
       },
     }) as TranslationWithPage | null;
-    if (!tr) continue;
 
-    const tags = tr.page.pageTags.map((t: PageTag) => {
-      const tagTr = t.translations?.[0];
-      return { name: tagTr?.name ?? t.name, slug: tagTr?.slug ?? t.slug };
-    });
+    if (tr) {
+      // Has translation - use it
+      const tags = tr.page.pageTags.map((t: PageTag) => {
+        const tagTr = t.translations?.[0];
+        return { name: tagTr?.name ?? t.name, slug: tagTr?.slug ?? t.slug };
+      });
 
-    items.push({
-      pageId: tr.page.id,
-      canonicalSlug: tr.page.slug,
-      slug: tr.slug,
-      locale: effectiveLocale,
-      isFallback: cat.isFallback,
-      title: tr.title,
-      seoTitle: tr.seoTitle ?? null,
-      seoDescription: tr.seoDescription ?? null,
-      altText: tr.altText ?? null,
-      description: tr.description ?? null,
-      imageUrl: tr.page.imageUrl,
-      thumbUrl: tr.page.thumbUrl ?? null,
-      categorySlug: tr.page.category,
-      tags,
-      createdAt: tr.page.createdAt,
-      status: tr.page.status,
-    });
+      items.push({
+        pageId: tr.page.id,
+        canonicalSlug: tr.page.slug,
+        slug: tr.slug,
+        locale: effectiveLocale,
+        isFallback: cat.isFallback,
+        title: tr.title,
+        seoTitle: tr.seoTitle ?? null,
+        seoDescription: tr.seoDescription ?? null,
+        altText: tr.altText ?? null,
+        description: tr.description ?? null,
+        imageUrl: tr.page.imageUrl,
+        thumbUrl: tr.page.thumbUrl ?? null,
+        categorySlug: tr.page.category,
+        tags,
+        createdAt: tr.page.createdAt,
+        status: tr.page.status,
+      });
+    } else {
+      // No translation - fetch canonical page data directly
+      const page = await db.coloringPage.findUnique({
+        where: { id: pageId },
+        include: { pageTags: true },
+      }) as (CanonicalPage & { pageTags: PageTag[] }) | null;
+      
+      if (!page) continue;
+
+      const tags = page.pageTags?.map((t: PageTag) => ({
+        name: t.name,
+        slug: t.slug,
+      })) ?? [];
+
+      items.push({
+        pageId: page.id,
+        canonicalSlug: page.slug,
+        slug: page.slug, // Use canonical slug when no translation
+        locale: effectiveLocale,
+        isFallback: cat.isFallback,
+        title: page.slug,
+        seoTitle: null,
+        seoDescription: null,
+        altText: null,
+        description: null,
+        imageUrl: page.imageUrl,
+        thumbUrl: page.thumbUrl ?? null,
+        categorySlug: page.category,
+        tags,
+        createdAt: page.createdAt,
+        status: page.status,
+      });
+    }
   }
 
   return { items, total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
