@@ -1,6 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+
+// Force dynamic rendering - categories change and shouldn't be cached
+export const dynamic = 'force-dynamic';
 import { isValidLocale } from '@/i18n/config';
 import { getTranslator } from '@/i18n/translations';
 import {
